@@ -2,13 +2,14 @@ package com.example.grocerystore.controller;
 
 import com.example.grocerystore.model.Product;
 import com.example.grocerystore.service.ProductService;
+import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @RestController
@@ -22,18 +23,15 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping
-    public List<Product> getAllProducts(@RequestParam(value = "name", required = false) String name) {
-        if (name != null) {
-            return productService.getAllProducts().stream()
-                    .filter(product -> product.getName().equalsIgnoreCase(name))
-                    .toList();
-        }
-        return productService.getAllProducts();
-    }
-
     @GetMapping("/{id}")
     public Product getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
+        return productService.getProductById(id)
+        .orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+    }
+
+    @GetMapping
+    public List<Product> getProductsInfoByName(@RequestParam String name) {
+        return productService.getProductsByName(name);
     }
 }
